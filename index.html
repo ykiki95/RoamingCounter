@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>해외 로밍 가격 비교 계산기</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f6fa;
+  --surface: #ffffff;
+  --text: #1a1d26;
+  --text-sub: #5f6571;
+  --primary: #2563eb;
+  --primary-light: #dbeafe;
+  --primary-dark: #1d4ed8;
+  --accent: #f59e0b;
+  --accent-light: #fef3c7;
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+  --border: #e2e5eb;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.header {
+  background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
+  color: #fff;
+  padding: 28px 20px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+  animation: headerPulse 8s ease-in-out infinite;
+}
+@keyframes headerPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+.header h1 { font-size: 22px; font-weight: 700; position: relative; letter-spacing: -0.3px; }
+.header h1 .icon { font-size: 26px; display: block; margin-bottom: 6px; }
+.header p { font-size: 13px; opacity: 0.8; margin-top: 6px; position: relative; }
+
+.container { max-width: 640px; margin: 0 auto; padding: 16px; }
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 14px;
+}
+.card-title {
+  font-size: 15px; font-weight: 700;
+  color: var(--text); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title .badge {
+  font-size: 11px; background: var(--primary-light);
+  color: var(--primary); padding: 2px 8px;
+  border-radius: 20px; font-weight: 600;
+}
+
+.form-group { margin-bottom: 14px; }
+.form-group label {
+  display: block; font-size: 13px;
+  font-weight: 600; color: var(--text-sub);
+  margin-bottom: 6px;
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+input, select {
+  width: 100%; padding: 10px 12px; font-size: 15px;
+  font-family: var(--font);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none; appearance: none;
+}
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%235f6571'%3E%3Cpath d='M6 8.5L1 3.5h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+input:focus, select:focus {
+  outline: none; border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+input[type="number"], input[type="date"] { font-variant-numeric: tabular-nums; }
+.input-hint { font-size: 11px; color: var(--text-sub); margin-top: 4px; }
+
+.select-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+select:disabled { background-color: #f0f1f4; color: #9ca0aa; cursor: not-allowed; }
+
+/* Visitor counter */
+.visitor-bar {
+  display: flex; justify-content: flex-end; align-items: center;
+  gap: 6px; margin-bottom: 8px;
+  font-size: 11px; color: var(--text-sub);
+  font-variant-numeric: tabular-nums;
+}
+.visitor-bar span { white-space: nowrap; }
+.visitor-bar .sep { color: var(--border); }
+.visitor-count {
+  font-weight: 700; color: var(--primary);
+  min-width: 28px; display: inline-block; text-align: right;
+}
+
+.btn-group { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin-top: 6px; }
+.btn {
+  padding: 12px 20px; font-size: 15px;
+  font-weight: 700; font-family: var(--font);
+  border: none; border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s, background 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,0.3); }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-reset { background: var(--bg); color: var(--text-sub); border: 1.5px solid var(--border); }
+.btn-reset:hover { background: #ebedf2; }
+
+#results { display: none; }
+#results.visible { display: block; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.summary-item {
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 12px; text-align: center;
+}
+.summary-value {
+  font-size: 20px; font-weight: 800;
+  color: var(--primary); font-variant-numeric: tabular-nums;
+}
+.summary-label { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+
+.usage-list { display: flex; flex-direction: column; gap: 8px; }
+.usage-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 12px; background: var(--bg);
+  border-radius: var(--radius-sm); font-size: 13px;
+}
+.usage-row .label { color: var(--text-sub); }
+.usage-row .value { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.table-wrap { overflow-x: auto; margin: 0 -20px; padding: 0 20px; }
+.compare-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 480px; }
+.compare-table th {
+  background: var(--bg); font-weight: 700;
+  padding: 10px 12px; text-align: left;
+  font-size: 12px; color: var(--text-sub);
+  border-bottom: 2px solid var(--border); white-space: nowrap;
+}
+.compare-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.compare-table tr.cheapest td { background: var(--success-light); }
+.compare-table tr.cheapest td:first-child { font-weight: 700; color: var(--success); }
+.price { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tag {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 2px 6px; border-radius: 4px; margin-left: 4px; vertical-align: middle;
+}
+.tag-best { background: var(--success-light); color: #059669; }
+.tag-easy { background: var(--primary-light); color: var(--primary); }
+
+.rec-cards { display: flex; flex-direction: column; gap: 10px; }
+.rec-card {
+  border-radius: var(--radius-sm); padding: 14px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.rec-card .icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+.rec-card .content { flex: 1; }
+.rec-card .title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.rec-card .desc { font-size: 12px; line-height: 1.5; }
+.rec-best { background: var(--success-light); }
+.rec-best .title { color: #059669; }
+.rec-easy { background: var(--primary-light); }
+.rec-easy .title { color: var(--primary); }
+.rec-save { background: var(--accent-light); }
+.rec-save .title { color: #d97706; }
+.rec-tip { background: var(--bg); }
+.rec-tip .title { color: var(--text); }
+
+.esim-pkg {
+  padding: 10px 12px; background: var(--bg);
+  border-radius: var(--radius-sm); font-size: 13px;
+  margin-bottom: 6px; display: flex;
+  justify-content: space-between; align-items: center;
+}
+.esim-pkg .name { font-weight: 600; }
+.esim-pkg .price { color: var(--primary); }
+
+.disclaimer {
+  text-align: center; font-size: 11px;
+  color: var(--text-sub); padding: 16px 20px 32px; line-height: 1.6;
+}
+
+.error-msg {
+  display: none; background: var(--danger-light);
+  color: var(--danger); padding: 10px 14px;
+  border-radius: var(--radius-sm); font-size: 13px;
+  font-weight: 600; margin-bottom: 10px;
+}
+.error-msg.visible { display: block; animation: shake 0.3s ease; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+@media (min-width: 640px) {
+  .container { padding: 24px; }
+  .header { padding: 36px 24px 32px; }
+  .header h1 { font-size: 26px; }
+  .card { padding: 24px; }
+  .summary-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span class="icon">✈️</span>해외 로밍 가격 비교 계산기</h1>
+  <p>SKT · KT · LGU+ · 유심/eSIM 예상 요금을 한눈에 비교하세요</p>
+</div>
+
+<div class="container">
+  <div id="errorMsg" class="error-msg"></div>
+
+  <!-- ── 여행 정보 ── -->
+  <div class="card">
+    <div class="card-title">🌏 여행 정보</div>
+    <div class="form-group">
+      <label>여행 국가</label>
+      <div class="select-group">
+        <select id="continent" onchange="onContinentChange()">
+          <option value="">대륙 선택</option>
+        </select>
+        <select id="country" disabled>
+          <option value="">국가 선택</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="startDate">출발일</label>
+        <input type="date" id="startDate">
+      </div>
+      <div class="form-group">
+        <label for="endDate">귀국일</label>
+        <input type="date" id="endDate">
+      </div>
+    </div>
+    <div class="input-hint">* 출발일·귀국일 모두 포함하여 계산합니다</div>
+  </div>
+
+  <!-- ── 데이터 사용 패턴 ── -->
+  <div class="card">
+    <div class="card-title">📱 일일 데이터 사용 패턴</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="youtube">유튜브 (시간/일)</label>
+        <input type="number" id="youtube" min="0" step="0.5" value="1" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="music">음악 스트리밍 (시간/일)</label>
+        <input type="number" id="music" min="0" step="0.5" value="2" placeholder="0">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="messaging">카톡/메일 (사진포함, 시간/일)</label>
+        <input type="number" id="messaging" min="0" step="0.5" value="2" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label for="maps">지도/인터넷 (시간/일)</label>
+        <input type="number" id="maps" min="0" step="0.5" value="1" placeholder="0">
+      </div>
+    </div>
+    <div class="input-hint">* 소수점 입력 가능 (예: 0.5시간 = 30분)</div>
+  </div>
+
+  <!-- ── 방문자 카운터 ── -->
+  <div class="visitor-bar">
+    <span>오늘 방문자 <span class="visitor-count" id="todayCount">-</span>명</span>
+    <span class="sep">|</span>
+    <span>누적 방문자 <span class="visitor-count" id="totalCount">-</span>명</span>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-primary" onclick="handleCalculate()">📊 계산하기</button>
+    <button class="btn btn-reset" onclick="handleReset()">초기화</button>
+  </div>
+
+  <div id="results"></div>
+
+  <div class="disclaimer" id="disclaimer" style="display:none;">
+    본 계산기는 내장된 샘플 요금표를 기준으로 추정한 값이며,<br>실제 요금과 차이가 있을 수 있습니다.<br>
+    최신 요금은 각 통신사 공식 홈페이지를 확인해 주세요.
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   해외 로밍 가격 비교 계산기 - JavaScript
+   ============================================================ */
+
+// ── 사용량 환산 기준 (MB) ──
+const USAGE_PROFILE_CONSTANTS = {
+  YOUTUBE_PER_HOUR_MB: 700,       // 유튜브 1시간 = 700MB
+  MUSIC_PER_HOUR_MB: 72,          // 음악 스트리밍 1시간 = 72MB
+  MESSAGING_PER_HOUR_MB: 50,      // 카톡/메일(사진포함) 1시간 = 50MB (텍스트+이미지+음성메시지 혼합)
+  MAPS_PER_HOUR_MB: 80            // 지도/인터넷 검색 1시간 = 80MB (지도타일+웹브라우징 혼합)
+};
+
+// ── 대륙별 국가 목록 (T로밍 기준) ──
+const CONTINENT_COUNTRIES = {
+  '미주/남미': [
+    '가이아나','과들루프','과테말라','그레나다','네덜란드령 안틸레스','니카라과',
+    '도미니카 공화국','도미니카 연방','마르티니크','멕시코','몬트세랫','미국',
+    '미국령 버진아일랜드','바베이도스','버뮤다','베네수엘라','볼리비아','브라질',
+    '세인트루시아','세인트빈센트 그레나딘','세인트키츠 네비스','수리남','아루바',
+    '아르헨티나','아이티','앤티가 바부다','앵귈라','에콰도르','엘살바도르',
+    '영국령 버진아일랜드','온두라스','우루과이','자메이카','칠레','캐나다',
+    '케이맨 제도','코스타리카','콜롬비아','쿠바','퀴라소','크루즈',
+    '터크스 케이커스 제도','트리니다드 토바고','파나마','파라과이','페루',
+    '푸에르토리코','프랑스령 기아나'
+  ],
+  '아시아': [
+    '네팔','대만','동티모르','라오스','마카오','말레이시아','몰디브','몽골',
+    '미얀마','방글라데시','베트남','부탄','브루나이','스리랑카','싱가포르',
+    '우즈베키스탄','인도','인도네시아','일본','중국','카자흐스탄','캄보디아',
+    '키르기스스탄','타지키스탄','태국','파키스탄','필리핀','홍콩'
+  ],
+  '아프리카': [
+    '가나','가봉','감비아','기니','나미비아','나이지리아','남아프리카 공화국',
+    '니제르','라이베리아','르완다','리비아','마다가스카르','마요트','말라위',
+    '말리','모로코','모리셔스','모잠비크','부르키나파소','세네갈','세이셸',
+    '수단','시에라리온','알제리','에티오피아','우간다','이집트','잠비아',
+    '중앙아프리카 공화국','차드','카메룬','카보베르데','케냐','코트디부아르',
+    '콩고 공화국','콩고 민주 공화국','탄자니아','토고','튀니지'
+  ],
+  '유럽': [
+    '그리스','네덜란드','노르웨이','덴마크','독일','라트비아','러시아','루마니아',
+    '룩셈부르크','리투아니아','리히텐슈타인','마케도니아 공화국','맨 섬','모나코',
+    '몬테네그로','몰도바','몰타','바티칸 시국','벨기에','벨라루스',
+    '보스니아 헤르체고비나','불가리아','산마리노','세르비아','스웨덴','스위스',
+    '스페인','슬로바키아','슬로베니아','아이슬란드','아일랜드','안도라','알바니아',
+    '에스토니아','영국','오스트리아','우크라이나','이탈리아','체코','크로아티아',
+    '튀르키예','페로 제도','포르투갈','폴란드','프랑스','핀란드','헝가리'
+  ],
+  '중동': [
+    '레바논','바레인','사우디아라비아','시리아','아랍에미리트','아르메니아',
+    '아제르바이잔','아프가니스탄','예멘','오만','요르단','이라크','이스라엘',
+    '조지아','카타르','쿠웨이트','키프로스','투르크메니스탄','팔레스타인'
+  ],
+  '오세아니아': [
+    '괌','뉴질랜드','뉴칼레도니아','바누아투','사모아','사이판','통가',
+    '파푸아뉴기니','팔라우','프랑스령 폴리네시아','피지','호주'
+  ]
+};
+
+// ── 국가 → 로밍 권역 매핑 ──
+// (실제 서비스 시 최신 요금표로 갱신 필요)
+const COUNTRY_TO_REGION = {};
+
+['일본','중국','대만','홍콩','태국','베트남','싱가포르','말레이시아','인도네시아',
+ '필리핀','캄보디아','라오스','미얀마','몽골','마카오','네팔','방글라데시','스리랑카',
+ '인도','브루나이','몰디브','파키스탄','동티모르','부탄','우즈베키스탄','카자흐스탄',
+ '키르기스스탄','타지키스탄'
+].forEach(c => COUNTRY_TO_REGION[c] = 'ASIA');
+
+['미국','캐나다','푸에르토리코','미국령 버진아일랜드','괌','사이판'
+].forEach(c => COUNTRY_TO_REGION[c] = 'NORTH_AMERICA');
+
+['영국','프랑스','독일','이탈리아','스페인','네덜란드','스위스','오스트리아','벨기에',
+ '포르투갈','그리스','체코','폴란드','스웨덴','노르웨이','덴마크','핀란드','아일랜드',
+ '헝가리','루마니아','불가리아','크로아티아','슬로베니아','슬로바키아','에스토니아',
+ '라트비아','리투아니아','룩셈부르크','몰타','아이슬란드','세르비아','몬테네그로',
+ '보스니아 헤르체고비나','알바니아','마케도니아 공화국','몰도바','우크라이나',
+ '벨라루스','러시아','튀르키예','안도라','모나코','산마리노','리히텐슈타인',
+ '바티칸 시국','맨 섬','페로 제도','키프로스'
+].forEach(c => COUNTRY_TO_REGION[c] = 'EUROPE');
+
+['호주','뉴질랜드','피지','뉴칼레도니아','바누아투','사모아','통가',
+ '파푸아뉴기니','팔라우','프랑스령 폴리네시아'
+].forEach(c => COUNTRY_TO_REGION[c] = 'OCEANIA');
+// 매핑되지 않은 국가(중동, 아프리카, 남미 등) → 자동 ETC 처리
+
+// ── 요금표 (실제 서비스 시 최신 요금표로 갱신 필요) ──
+const PRICING_SKT_BARO = { ASIA:9900, NORTH_AMERICA:13900, EUROPE:13900, OCEANIA:13900, ETC:15900 };
+const PRICING_KT_ROAMING = { ASIA:11000, NORTH_AMERICA:14000, EUROPE:14000, OCEANIA:14000, ETC:15000 };
+const PRICING_LGU_ROAMING = { ASIA:8900, NORTH_AMERICA:13000, EUROPE:13000, OCEANIA:13000, ETC:14900 };
+
+const SIM_PACKAGES = [
+  { name: '1GB / 7일',   dataMB:1024,  days:7,  price:5900  },
+  { name: '3GB / 7일',   dataMB:3072,  days:7,  price:9900  },
+  { name: '5GB / 10일',  dataMB:5120,  days:10, price:14900 },
+  { name: '10GB / 15일', dataMB:10240, days:15, price:24900 },
+  { name: '20GB / 30일', dataMB:20480, days:30, price:39900 }
+];
+
+// ── 유틸리티 ──
+function formatCurrency(n) { return n.toLocaleString('ko-KR') + '원'; }
+function formatData(mb) { return mb >= 1024 ? (mb/1024).toFixed(1)+'GB' : Math.round(mb)+'MB'; }
+function getRegion(c) { return COUNTRY_TO_REGION[c] || 'ETC'; }
+function getRegionLabel(r) {
+  return {ASIA:'아시아',NORTH_AMERICA:'북미',EUROPE:'유럽',OCEANIA:'오세아니아',ETC:'기타'}[r]||r;
+}
+
+// ── 대륙→국가 연동 ──
+function onContinentChange() {
+  const cont = document.getElementById('continent').value;
+  const el = document.getElementById('country');
+  el.innerHTML = '<option value="">국가 선택</option>';
+  if (!cont) { el.disabled = true; return; }
+  (CONTINENT_COUNTRIES[cont]||[]).forEach(c => {
+    const o = document.createElement('option'); o.value=c; o.textContent=c; el.appendChild(o);
+  });
+  el.disabled = false;
+}
+
+// ── 계산 함수 ──
+function calculateTripDays(s,e) { return Math.floor((new Date(e)-new Date(s))/(864e5))+1; }
+
+function calculateDailyUsage(i) {
+  const C = USAGE_PROFILE_CONSTANTS;
+  const b = {
+    youtube: i.youtube*C.YOUTUBE_PER_HOUR_MB,
+    music: i.music*C.MUSIC_PER_HOUR_MB,
+    messaging: i.messaging*C.MESSAGING_PER_HOUR_MB,
+    maps: i.maps*C.MAPS_PER_HOUR_MB
+  };
+  return { daily: b.youtube+b.music+b.messaging+b.maps, breakdown: b };
+}
+
+function calculateSKTBaro(region, days) {
+  const r = PRICING_SKT_BARO[region]||PRICING_SKT_BARO.ETC;
+  return { name:'SKT Baro', total:r*days, dailyRate:r, method:`${formatCurrency(r)} × ${days}일`, note:'데이터 무제한형' };
+}
+function calculateKTRoaming(region, days) {
+  const r = PRICING_KT_ROAMING[region]||PRICING_KT_ROAMING.ETC;
+  return { name:'KT 하루종일 로밍', total:r*days, dailyRate:r, method:`${formatCurrency(r)} × ${days}일`, note:'데이터 무제한형' };
+}
+function calculateLGURoaming(region, days) {
+  const r = PRICING_LGU_ROAMING[region]||PRICING_LGU_ROAMING.ETC;
+  return { name:'LGU+ 유로밍', total:r*days, dailyRate:r, method:`${formatCurrency(r)} × ${days}일`, note:'데이터 무제한형' };
+}
+
+function calculateSimPlan(tripDays, totalDataMB) {
+  const sv = SIM_PACKAGES.filter(p => p.days>=tripDays && p.dataMB>=totalDataMB);
+  if (sv.length) {
+    sv.sort((a,b)=>a.price-b.price);
+    const b=sv[0];
+    return { name:'데이터 유심/eSIM', total:b.price, method:`${b.name} 1개`,
+      note:`용량 ${formatData(b.dataMB)} / 유효 ${b.days}일`, packages:[b] };
+  }
+  let rd=totalDataMB, rdy=tripDays, tp=0; const sel=[];
+  const sorted=[...SIM_PACKAGES].sort((a,b)=>(b.dataMB/b.price)-(a.dataMB/a.price));
+  let safe=0;
+  while((rd>0||rdy>0)&&safe<20){
+    safe++; let bp=null,bs=-1;
+    for(const p of sorted){ const cd=Math.min(p.dataMB,Math.max(rd,0)),sc=cd/p.price; if(sc>bs){bs=sc;bp=p;}}
+    if(!bp)break; sel.push(bp); rd-=bp.dataMB; rdy-=bp.days; tp+=bp.price;
+    if(rd<=0&&rdy<=0)break;
+  }
+  while(rdy>0&&safe<30){safe++;const dp=[...SIM_PACKAGES].sort((a,b)=>a.price-b.price)[0];sel.push(dp);rdy-=dp.days;tp+=dp.price;}
+  const mp={}; sel.forEach(p=>{mp[p.name]=(mp[p.name]||0)+1;});
+  const ms=Object.entries(mp).map(([k,v])=>`${k} ${v}개`).join(' + ');
+  return { name:'데이터 유심/eSIM', total:tp, method:ms, note:`패키지 ${sel.length}개 조합`, packages:sel };
+}
+
+// ── 렌더링 ──
+function renderResult(data) {
+  const {country,region,tripDays,dailyUsage,totalUsage,breakdown,options,simResult,inputs} = data;
+  const all = [...options,simResult].sort((a,b)=>a.total-b.total);
+  const cheapest=all[0], expensive=all[all.length-1], savings=expensive.total-cheapest.total;
+  const easyPick = options.slice().sort((a,b)=>a.total-b.total)[0];
+
+  let h = '';
+
+  // 1. 여행 요약
+  h += `<div class="card" style="margin-top:20px;"><div class="card-title">📋 여행 요약</div>
+  <div class="summary-grid">
+    <div class="summary-item"><div class="summary-value">${country}</div><div class="summary-label">${getRegionLabel(region)} 권역</div></div>
+    <div class="summary-item"><div class="summary-value">${tripDays}일</div><div class="summary-label">총 여행일수</div></div>
+    <div class="summary-item"><div class="summary-value">${formatData(dailyUsage)}</div><div class="summary-label">일일 예상 사용량</div></div>
+    <div class="summary-item"><div class="summary-value">${formatData(totalUsage)}</div><div class="summary-label">총 예상 사용량</div></div>
+    <div class="summary-item"><div class="summary-value" style="color:var(--success);">${formatCurrency(cheapest.total)}</div><div class="summary-label">최저 예상 비용</div></div>
+    <div class="summary-item"><div class="summary-value" style="color:var(--accent);">${formatCurrency(savings)}</div><div class="summary-label">절약 가능 금액</div></div>
+  </div></div>`;
+
+  // 2. 비교표
+  h += `<div class="card"><div class="card-title">💰 통신사별 예상 비용 비교</div>
+  <div class="table-wrap"><table class="compare-table">
+  <thead><tr><th>옵션</th><th>계산 방식</th><th>예상 비용</th><th>비고</th></tr></thead><tbody>`;
+  all.forEach(o => {
+    const ic=o===cheapest, ie=o===easyPick&&o!==cheapest;
+    h += `<tr class="${ic?'cheapest':''}">
+      <td>${o.name}${ic?'<span class="tag tag-best">최저가</span>':''}${ie?'<span class="tag tag-easy">편의성</span>':''}</td>
+      <td>${o.method}</td><td class="price">${formatCurrency(o.total)}</td><td>${o.note}</td></tr>`;
+  });
+  h += `</tbody></table></div></div>`;
+
+  // 3. eSIM 패키지
+  if (simResult.packages?.length) {
+    h += `<div class="card"><div class="card-title">📡 유심/eSIM 추천 패키지</div>`;
+    const pc={}; simResult.packages.forEach(p=>{pc[p.name]=(pc[p.name]||0)+1;});
+    Object.entries(pc).forEach(([n,c])=>{
+      const pkg=SIM_PACKAGES.find(p=>p.name===n);
+      h+=`<div class="esim-pkg"><span class="name">${n} ${c>1?`× ${c}개`:''}</span><span class="price">${formatCurrency(pkg.price*c)}</span></div>`;
+    });
+    if(simResult.packages.length>1) h+=`<div class="input-hint" style="margin-top:4px;">* 단일 패키지로 커버 불가하여 복수 조합 추천</div>`;
+    h+=`</div>`;
+  }
+
+  // 4. 추천 카드
+  h += `<div class="card"><div class="card-title">🏆 추천 결과</div><div class="rec-cards">
+    <div class="rec-card rec-best"><div class="icon">💚</div><div class="content">
+      <div class="title">최저가 추천 — ${cheapest.name}</div>
+      <div class="desc">${formatCurrency(cheapest.total)}으로 가장 경제적입니다. ${cheapest.method} 기준.</div></div></div>
+    <div class="rec-card rec-easy"><div class="icon">👍</div><div class="content">
+      <div class="title">편의성 추천 — ${easyPick.name}</div>
+      <div class="desc">기존 번호 유지, 별도 설정 불필요. ${formatCurrency(easyPick.total)}. 데이터 무제한.</div></div></div>
+    <div class="rec-card rec-save"><div class="icon">💰</div><div class="content">
+      <div class="title">절약 금액 — ${formatCurrency(savings)}</div>
+      <div class="desc">최저가(${cheapest.name}) 대비 최고가(${expensive.name}) 차이입니다.</div></div></div>
+    <div class="rec-card rec-tip"><div class="icon">💡</div><div class="content">
+      <div class="title">상황별 가이드</div>
+      <div class="desc"><strong>단기·간편함 중시:</strong> ${easyPick.name}이 적합합니다. 도착 즉시 사용 가능하고 설정 번거로움이 없습니다.<br>
+      <strong>장기·가성비 중시:</strong> ${cheapest.name==='데이터 유심/eSIM'?'유심/eSIM이 용량 대비 비용이 낮아 유리합니다.':`${cheapest.name}이 일일 요금이 가장 낮아 유리합니다.`}</div></div></div>
+  </div></div>`;
+
+  // 5. 데이터 사용량 근거 (맨 하단)
+  h += `<div class="card"><div class="card-title">📊 데이터 사용량 계산 근거 <span class="badge">일일 기준</span></div>
+  <div class="usage-list">
+    <div class="usage-row"><span class="label">🎬 유튜브 ${inputs.youtube}시간</span><span class="value">${formatData(breakdown.youtube)}</span></div>
+    <div class="usage-row"><span class="label">🎵 음악 스트리밍 ${inputs.music}시간</span><span class="value">${formatData(breakdown.music)}</span></div>
+    <div class="usage-row"><span class="label">💬 카톡/메일(사진포함) ${inputs.messaging}시간</span><span class="value">${formatData(breakdown.messaging)}</span></div>
+    <div class="usage-row"><span class="label">🗺️ 지도/인터넷 ${inputs.maps}시간</span><span class="value">${formatData(breakdown.maps)}</span></div>
+    <div class="usage-row" style="font-weight:700;background:var(--primary-light);">
+      <span class="label" style="color:var(--primary);">합계 (일일)</span><span class="value" style="color:var(--primary);">${formatData(dailyUsage)}</span></div>
+    <div class="usage-row"><span class="label">× ${tripDays}일 = 총 사용량</span><span class="value" style="font-weight:700;">${formatData(totalUsage)}</span></div>
+  </div>
+  <div class="input-hint" style="margin-top:10px;">
+    환산 기준: 유튜브 ${USAGE_PROFILE_CONSTANTS.YOUTUBE_PER_HOUR_MB}MB/h · 
+    음악 ${USAGE_PROFILE_CONSTANTS.MUSIC_PER_HOUR_MB}MB/h · 
+    카톡/메일(사진포함) ${USAGE_PROFILE_CONSTANTS.MESSAGING_PER_HOUR_MB}MB/h · 
+    지도/인터넷 ${USAGE_PROFILE_CONSTANTS.MAPS_PER_HOUR_MB}MB/h
+  </div></div>`;
+
+  const el = document.getElementById('results');
+  el.innerHTML = h;
+  el.classList.add('visible');
+  document.getElementById('disclaimer').style.display = 'block';
+  setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'start'}),100);
+}
+
+// ── 이벤트 핸들러 ──
+function showError(m) { const e=document.getElementById('errorMsg'); e.textContent=m; e.classList.add('visible'); e.scrollIntoView({behavior:'smooth',block:'center'}); }
+function hideError() { document.getElementById('errorMsg').classList.remove('visible'); }
+
+function handleCalculate() {
+  hideError();
+  const country=document.getElementById('country').value;
+  const startDate=document.getElementById('startDate').value;
+  const endDate=document.getElementById('endDate').value;
+  const youtube=parseFloat(document.getElementById('youtube').value)||0;
+  const music=parseFloat(document.getElementById('music').value)||0;
+  const messaging=parseFloat(document.getElementById('messaging').value)||0;
+  const maps=parseFloat(document.getElementById('maps').value)||0;
+
+  if(!country){showError('여행 국가를 선택해 주세요.');return;}
+  if(!startDate||!endDate){showError('출발일과 귀국일을 모두 입력해 주세요.');return;}
+  const tripDays=calculateTripDays(startDate,endDate);
+  if(tripDays<1){showError('귀국일이 출발일보다 빠릅니다. 날짜를 확인해 주세요.');return;}
+  if(tripDays>365){showError('여행일수가 365일을 초과합니다.');return;}
+  if(youtube<0||music<0||messaging<0||maps<0){showError('사용량은 0 이상이어야 합니다.');return;}
+
+  const region=getRegion(country);
+  const {daily:dailyUsage,breakdown}=calculateDailyUsage({youtube,music,messaging,maps});
+  const totalUsage=dailyUsage*tripDays;
+
+  renderResult({
+    country,region,tripDays,dailyUsage,totalUsage,breakdown,
+    options:[calculateSKTBaro(region,tripDays),calculateKTRoaming(region,tripDays),calculateLGURoaming(region,tripDays)],
+    simResult:calculateSimPlan(tripDays,totalUsage),
+    inputs:{youtube,music,messaging,maps}
+  });
+}
+
+function handleReset() {
+  hideError();
+  document.getElementById('continent').selectedIndex=0;
+  onContinentChange();
+  document.getElementById('startDate').value='';
+  document.getElementById('endDate').value='';
+  document.getElementById('youtube').value='1';
+  document.getElementById('music').value='2';
+  document.getElementById('messaging').value='2';
+  document.getElementById('maps').value='1';
+  document.getElementById('results').innerHTML='';
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('disclaimer').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── 초기화 ──
+(function init(){
+  const ce=document.getElementById('continent');
+  Object.keys(CONTINENT_COUNTRIES).forEach(c=>{
+    const o=document.createElement('option');o.value=c;o.textContent=c;ce.appendChild(o);
+  });
+  const today=new Date(), future=new Date(today);
+  future.setDate(today.getDate()+3);
+  const fmt=d=>d.toISOString().split('T')[0];
+  document.getElementById('startDate').value=fmt(today);
+  document.getElementById('endDate').value=fmt(future);
+  document.querySelectorAll('input[type="number"]').forEach(el=>{
+    el.addEventListener('input',()=>{if(parseFloat(el.value)<0)el.value=0;});
+  });
+})();
+
+// ── 방문자 카운터 (Netlify Functions + Upstash Redis) ──
+// Netlify 배포 환경에서 /.netlify/functions/visitor-count API를 호출합니다.
+// Functions 미배포 또는 Redis 미설정 시 기본값(38 / 13,492) 표시
+(async function initVisitorCounter() {
+  const todayEl = document.getElementById('todayCount');
+  const totalEl = document.getElementById('totalCount');
+  const FALLBACK_TODAY = 38;
+  const FALLBACK_TOTAL = 13492;
+  const API = '/.netlify/functions/visitor-count';
+
+  // 세션 중복 방지 (같은 탭 새로고침 시 재카운트 방지)
+  const counted = sessionStorage.getItem('visitor_counted');
+
+  try {
+    const method = counted ? 'GET' : 'POST';
+    const res = await fetch(API, { method });
+
+    if (!res.ok) throw new Error('API status ' + res.status);
+
+    const data = await res.json();
+    todayEl.textContent = (data.today || FALLBACK_TODAY).toLocaleString();
+    totalEl.textContent = (data.total || FALLBACK_TOTAL).toLocaleString();
+
+    if (!counted) sessionStorage.setItem('visitor_counted', '1');
+  } catch (err) {
+    // API 실패 시 기본값 표시 (서비스 중단 방지)
+    console.warn('방문자 카운터:', err.message);
+    todayEl.textContent = FALLBACK_TODAY.toLocaleString();
+    totalEl.textContent = FALLBACK_TOTAL.toLocaleString();
+  }
+})();
+</script>
+</body>
+</html>
